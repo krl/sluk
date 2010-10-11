@@ -28,7 +28,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
                             # needs tuple form time
                             modified = time.gmtime(cache[feed]["modified"]))
 
-  if parsed.status == 304:
+  if parsed.has_key('status') and parsed.status == 304:
     print " - server says not changed"
     continue
 
