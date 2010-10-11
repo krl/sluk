@@ -1,0 +1,4 @@
+[conf]
+messages  = /home/user/mail/sluk/
+feed_list = /home/user/.sluk_feeds
+cache     = /home/user/.sluk_cache

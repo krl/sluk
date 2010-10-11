@@ -1,0 +1,20 @@
+* What is?
+
+Sluk is a simple feed to email program primarily meant to be used with the [[http://notmuchmail.org/][notmuch]] mail indexing system.
+
+It takes a list of rss-feeds and writes them as email messages to a directory, one file per entry.
+
+Sluk does not send mail.
+
+* Requirements
+feedparser
+  
+* Usage
+On invocation the program will look for the ~/.slukrc file, which should contain something like this:
+
+: [conf]
+: messages  = /home/user/mail/sluk/
+: feed_list = /home/user/.sluk_feeds
+: cache     = /home/user/.sluk_cache
+
+Sluk uses etags and last-modified headers in order to save server bandwith.
