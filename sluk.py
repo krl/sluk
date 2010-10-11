@@ -5,6 +5,7 @@ import ConfigParser, feedparser, os, time, json
 
 from email.mime.text import MIMEText
 from email.utils import formatdate
+from hashlib import md5
 
 # init conf object
 conf = ConfigParser.ConfigParser()
@@ -14,6 +15,8 @@ conf.readfp(open(os.path.expanduser('~/.slukrc')))
 try:
   cache = json.loads(open(conf.get("conf", "cache")).read())
 except IOError:
+  cache = {}
+except ValueError:
   cache = {}
 
 for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
@@ -40,6 +43,10 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
 
   for entry in parsed.entries:
     path = conf.get("conf", "messages") + entry.link.replace("/", "!")
+
+    # python don't like long pathnames
+    if len(path) > 256:
+      path = conf.get("conf", "messages") + md5(path).hexdigest()
 
     # ignore updated feeds for now 
     # maybe TODO handle this in any way?
