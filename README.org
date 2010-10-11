@@ -17,4 +17,6 @@ On invocation the program will look for the ~/.slukrc file, which should contain
 : feed_list = /home/user/.sluk_feeds
 : cache     = /home/user/.sluk_cache
 
+The feed list should be a newline separated list of URL:s
+
 Sluk uses etags and last-modified headers in order to save server bandwith.
