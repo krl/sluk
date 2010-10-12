@@ -55,8 +55,10 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
       # content is not always in feed, use summary
       if entry.has_key("content"):
         content = entry.content[0].value
-      else:
+      elif entry.has_key("summary"):
         content = entry.summary
+      else:
+        content = entry['link'].encode("utf-8")
 
       # create text/html message only
       msg = MIMEText(content.encode("utf-8"), "html")      
