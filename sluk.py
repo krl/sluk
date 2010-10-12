@@ -62,7 +62,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
       msg = MIMEText(content.encode("utf-8"), "html")      
 
       msg['Subject'] = entry['title'].encode("utf-8")
-      msg['From']    = parsed['feed']['title'].encode("utf-8") + "<sluk@" + os.uname()[1] + ">"
+      msg['From']    = parsed['feed']['title'].encode("utf-8") + " <sluk@" + os.uname()[1] + ">"
       msg['To']      = "sluk@" + os.uname()[1]
       if hasattr(entry, "updated_parsed"):
         msg['Date']    = formatdate(time.mktime(entry.updated_parsed))
