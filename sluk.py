@@ -58,13 +58,18 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
       elif entry.has_key("summary"):
         content = entry.summary
       else:
-        content = entry['link']
+        content = entry.link
+
+      feed_name = parsed['feed']['title'].encode("utf-8")
+      title     = entry['title'].encode("utf-8")
 
       # create text/html message only
-      msg = MIMEText(content.encode("utf-8"), "html")      
+      msg = MIMEText('<h1><a href="%s">%s - %s</h1></a></h1>' % (entry.link.encode('utf-8'), feed_name, title) +  
+                     content.encode("utf-8"),
+                     "html")
 
-      msg['Subject'] = entry['title'].encode("utf-8")
-      msg['From']    = parsed['feed']['title'].encode("utf-8") + " <sluk@" + os.uname()[1] + ">"
+      msg['Subject'] = title
+      msg['From']    = feed_name + " <sluk@" + os.uname()[1] + ">"
       msg['To']      = "sluk@" + os.uname()[1]
       if hasattr(entry, "updated_parsed"):
         msg['Date']    = formatdate(time.mktime(entry.updated_parsed))
