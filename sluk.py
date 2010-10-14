@@ -29,7 +29,8 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
   parsed = feedparser.parse(feed,
                             etag     = cache[feed]["etag"],
                             # needs tuple form time
-                            modified = time.gmtime(cache[feed]["modified"]))
+                            modified = cache[feed]["modified"] and \
+                              time.gmtime(cache[feed]["modified"]))
 
   if parsed.has_key('status') and parsed.status == 304:
     print " - server says not changed"
