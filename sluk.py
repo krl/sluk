@@ -74,6 +74,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
       msg['To']      = "sluk@" + os.uname()[1]
       if hasattr(entry, "updated_parsed"):
         msg['Date']    = formatdate(time.mktime(entry.updated_parsed))
+      msg['X-Entry-URL'] = entry.link.encode('utf-8')
 
       # write to file
       message_file = open(path, "w")
