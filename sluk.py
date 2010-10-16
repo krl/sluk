@@ -7,9 +7,15 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 from hashlib import md5
 
+
 # init conf object
 conf = ConfigParser.ConfigParser()
 conf.readfp(open(os.path.expanduser('~/.slukrc')))
+
+def print_optionally(string):
+  "print the given string if the config option quiet is false or not set"
+  if not conf.has_option("conf", "quiet") or not conf.getboolean("conf", "quiet"):
+    print string
 
 # initialize cache
 try:
@@ -21,7 +27,7 @@ except ValueError:
 
 for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
   # some output
-  print feed
+  print_optionally(feed)
 
   if not cache.has_key(feed):
     cache[feed] = {"etag": None, "modified": None}
@@ -33,7 +39,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
                               time.gmtime(cache[feed]["modified"]))
 
   if parsed.has_key('status') and parsed.status == 304:
-    print " - server says not changed"
+    print_optionally(" - server says not changed")
     continue
 
   cache[feed]["etag"]     = parsed.etag if hasattr(parsed, "etag") else None
@@ -84,9 +90,9 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
       num_written += 1
 
   if num_written == 1:
-    print " - 1 new entry"
+    print_optionally(" - 1 new entry")
   if num_written > 1:
-    print " - %i new entries" % num_written
+    print_optionally(" - %i new entries" % num_written)
 
 # update cache
 
