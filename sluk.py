@@ -61,12 +61,15 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
       else:
         content = entry.link
 
+      # this should solve some charset problems (fingers crossed)
+      content = content.encode(parsed.encoding)
+
       feed_name = parsed['feed']['title'].encode("utf-8")
       title     = entry['title'].encode("utf-8")
 
       # create text/html message only
       msg = MIMEText('<h1><a href="%s">%s - %s</h1></a></h1>' % (entry.link.encode('utf-8'), feed_name, title) +  
-                     content.encode("utf-8"),
+                     content,
                      "html")
 
       msg['Subject'] = title
