@@ -50,17 +50,17 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
 
   for entry in parsed.entries:
     
-    link = ""
+    lnk = ""
     if not entry.has_key('link'):
-      if entry.has_key('href'):
-        link = entry.href
+      if entry.has_key('enclosures') and entry.enclosures[0].has_key('href'):
+        lnk = entry.enclosures[0].href
       else:
-        print_optionally("Warning! Skipping entry in feed %s that lacks both href and entry element!" % feed)
+        print_optionally("Warning! Skipping entry in feed %s that lacks both href enclosure and entry element!" % feed)
         continue # If the entry has neither link nor href element, it's clearly not a feed -- skip it.
     else:
-      link = entry.link
+      lnk = entry.link
 
-    path = conf.get("conf", "messages") + link.replace("/", "!")
+    path = conf.get("conf", "messages") + lnk.replace("/", "!")
 
     # python don't like long pathnames
     if len(path) > 256:
@@ -76,14 +76,14 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
       elif entry.has_key("summary"):
         content = entry.summary
       else:
-        content = entry.link
+        content = lnk
 
       # this should solve some charset problems (fingers crossed)
       content = content.encode(parsed.encoding)
 
       feed_name = parsed['feed']['title'].encode(parsed.encoding)
       title     = entry['title'].encode(parsed.encoding)
-      link      = entry.link.encode(parsed.encoding)
+      link      = lnk.encode(parsed.encoding)
 
       # create text/html message only
       msg = MIMEText('<h1><a href="%s">%s - %s</h1></a></h1>' % (link, feed_name, title) +  
