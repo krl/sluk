@@ -78,12 +78,14 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
       else:
         content = lnk
 
-      # this should solve some charset problems (fingers crossed)
-      content = content.encode(parsed.encoding)
-
-      feed_name = parsed['feed']['title'].encode(parsed.encoding)
-      title     = entry['title'].encode(parsed.encoding)
-      link      = lnk.encode(parsed.encoding)
+      try: 
+        content   = content.encode(parsed.encoding)
+        feed_name = parsed['feed']['title'].encode(parsed.encoding)
+        title     = entry['title'].encode(parsed.encoding)
+        link      = lnk.encode(parsed.encoding)
+      except UnicodeEncodeError:
+        print "error decoding entry " + entry['title']
+        continue
 
       # create text/html message only
       msg = MIMEText('<h1><a href="%s">%s - %s</h1></a></h1>' % (link, feed_name, title) +  
