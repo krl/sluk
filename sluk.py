@@ -84,7 +84,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
         title     = entry['title'].encode(parsed.encoding)
         link      = lnk.encode(parsed.encoding)
       except UnicodeEncodeError:
-        print "error decoding entry in feed %s" % feed 
+        print "error decoding entry " + entry['title']
         continue
 
       # create text/html message only
