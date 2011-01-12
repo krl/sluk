@@ -20,10 +20,10 @@ def print_optionally(string):
 # initialize cache
 try:
   cache = json.loads(open(conf.get("conf", "cache")).read())
-except IOError:
+except IOError, ValueError:
   cache = {}
-except ValueError:
-  cache = {}
+
+entries = []
 
 for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
   # some output
@@ -34,7 +34,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
 
   parsed = feedparser.parse(feed,
                             etag     = cache[feed]["etag"],
-                            # needs tuple form time
+                            # needs time in tuple form
                             modified = cache[feed]["modified"] and \
                               time.gmtime(cache[feed]["modified"]))
 
@@ -100,16 +100,23 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
       msg['X-Entry-URL'] = link
 
       # write to file
-      message_file = open(path, "w")
-      message_file.write(msg.as_string())
-      message_file.close()
-
+      entries.append({"path": path,
+                      "body": msg.as_string()})
+                    
       num_written += 1
 
   if num_written == 1:
     print_optionally(" - 1 new entry")
   if num_written > 1:
     print_optionally(" - %i new entries" % num_written)
+
+# write files
+
+for x in entries:
+  print_optionally("writing " + x['path'])
+  message_file = open(x['path'], "w")
+  message_file.write(x['body'])
+  message_file.close()
 
 # update cache
 
