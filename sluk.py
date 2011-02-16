@@ -32,12 +32,16 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
   if not cache.has_key(feed):
     cache[feed] = {"etag": None, "modified": None}
 
-  parsed = feedparser.parse(feed,
-                            etag     = cache[feed]["etag"],
-                            # needs time in tuple form
-                            modified = cache[feed]["modified"] and \
-                              time.gmtime(cache[feed]["modified"]))
-
+  try:
+    parsed = feedparser.parse(feed,
+                              etag     = cache[feed]["etag"],
+                              # needs time in tuple form
+                              modified = cache[feed]["modified"] and \
+                                time.gmtime(cache[feed]["modified"]))
+  except:
+    print_optionally("parsing failed!")
+    continue
+    
   if parsed.has_key('status') and parsed.status == 304:
     print_optionally(" - server says not changed")
     continue
