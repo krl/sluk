@@ -90,6 +90,9 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
       except UnicodeEncodeError:
         print_optionally("error decoding entry: " + path)
         continue
+      except KeyError:
+        print_optionally("error parsing entry: " + path) 
+        continue
 
       # create text/html message only
       msg = MIMEText('<h1><a href="%s">%s - %s</h1></a></h1>' % (link, feed_name, title) +  
