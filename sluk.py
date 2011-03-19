@@ -29,7 +29,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
   # some output
   print_optionally(feed)
 
-  if not cache.has_key(feed):
+  if feed not in cache:
     cache[feed] = {"etag": None, "modified": None}
 
   try:
@@ -42,7 +42,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
     print_optionally("parsing failed!")
     continue
     
-  if parsed.has_key('status') and parsed.status == 304:
+  if 'status' in parsed and parsed.status == 304:
     print_optionally(" - server says not changed")
     continue
 
@@ -55,8 +55,8 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
   for entry in parsed.entries:
     
     lnk = ""
-    if not entry.has_key('link'):
-      if entry.has_key('enclosures') and entry.enclosures[0].has_key('href'):
+    if 'link' not in entry:
+      if 'enclosures' in entry and 'href' in entry.enclosures[0]:
         lnk = entry.enclosures[0].href
       else:
         print_optionally("Warning! Skipping entry in feed %s that lacks both href enclosure and entry element!" % feed)
@@ -75,9 +75,9 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
     if not os.path.exists(path):
 
       # content is not always in feed, use summary
-      if entry.has_key("content"):
+      if "content" in entry:
         content = entry.content[0].value
-      elif entry.has_key("summary"):
+      elif "summary" in entry:
         content = entry.summary
       else:
         content = lnk
