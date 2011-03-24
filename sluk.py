@@ -1,7 +1,11 @@
 #!/usr/bin/python
 # -*- encoding:utf-8 -*-
 
-import ConfigParser, feedparser, os, time, json
+import ConfigParser
+import feedparser
+import os
+import time
+import json
 
 from email.mime.text import MIMEText
 from email.utils import formatdate
