@@ -1,7 +1,11 @@
 #!/usr/bin/python
 # -*- encoding:utf-8 -*-
 
-import ConfigParser, feedparser, os, time, json
+import ConfigParser
+import feedparser
+import os
+import time
+import json
 
 from email.mime.text import MIMEText
 from email.utils import formatdate
@@ -64,11 +68,11 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
     else:
       lnk = entry.link
 
-    path = conf.get("conf", "messages") + lnk.replace("/", "!")
+    path = os.path.join(conf.get("conf", "messages"), lnk.replace("/", "!"))
 
     # python don't like long pathnames
     if len(path) > 256:
-      path = conf.get("conf", "messages") + md5(path).hexdigest()
+      path = os.path.join(conf.get("conf", "messages"), md5(path).hexdigest())
 
     # ignore updated feeds for now 
     # maybe TODO handle this in any way?
