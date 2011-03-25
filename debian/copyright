@@ -6,6 +6,7 @@ Original-Source: git://github.com/krl/sluk.git
 Files: *
 Copyright:  Copyright 2011 Kristoffer Ström <kristoffer@rymdkoloni.se>
  Jameson Graef Rollins <jrollins@finestructure.net>
+ Albin Stjerna <albin@eval.nu>
 
 License: GPL-3+
  This package is free software; you can redistribute it and/or modify
