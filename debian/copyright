@@ -1,0 +1,29 @@
+Format-Specification: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?op=file&rev=59
+Debianized-By: Jameson Graef Rollins <jrollins@finestructure.net>
+Debianized-Date: Thu March 24 01:33:00 PDT 2011
+Original-Source: git://github.com/krl/sluk.git
+
+Files: *
+Copyright:  Copyright 2011 Kristoffer Ström <kristoffer@rymdkoloni.se>
+ Jameson Graef Rollins <jrollins@finestructure.net>
+
+License: GPL-3+
+ This package is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+ .
+ On Debian systems, the complete text of the GNU General Public License
+ version 3 can be found in file "/usr/share/common-licenses/GPL-3".
+
+Files: debian/*
+Copyright:  Copyright 2010 Jameson Graef Rollins <jrollins@finestructure.net>
+
+License: GPL-3+
+ This package is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+ .
+ On Debian systems, the complete text of the GNU General Public License
+ version 3 can be found in file "/usr/share/common-licenses/GPL-3".
