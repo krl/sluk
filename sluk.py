@@ -2,9 +2,9 @@
 # -*- mode: Python; encoding: utf-8; indent-tabs-mode: nil; tab-width: 2 -*-
 
 import ConfigParser
-from hashlib import md5
 import os
 import time
+import socket
 from email.mime.text import MIMEText
 from email.utils import formatdate
 import json
@@ -16,6 +16,11 @@ def print_optionally(string):
   "print the given string if the config option quiet is false or not set"
   if not conf.has_option("conf", "quiet") or not conf.getboolean("conf", "quiet"):
     print string
+
+def create_unique_filename():
+  "Create a unique maildir-style filename. See http://cr.yp.to/proto/maildir.html"
+  filename = repr(time.time()) + "_" + str(os.getpid()) + "." + socket.gethostname() + ":2,"
+  return filename
 
 # initialize user config
 conf = ConfigParser.ConfigParser()
@@ -101,16 +106,18 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
     if not os.path.exists(directory):
       os.makedirs(directory)
 
-    path = os.path.join(directory, lnk.replace("/", "!"))
+    # we like unique filenames
+    path = ""
+    while not path or os.path.exists(path):
+      path = os.path.join(directory, create_unique_filename())
 
-    # python don't like long pathnames
-    if len(path) > 256:
-      path = os.path.join(conf.get("conf", "messages"), md5(path).hexdigest())
+    # this should never ever occur (although never say never ever),
+    # but leave it here anyway since removing it would alter indentation
+    # for about 40 lines, and we don't like obese patches for simple changes
+    if os.path.exists(path):
+      print("E: File already exists: '%s'  -- Skipping..." % path)
 
-    # ignore updated feeds for now
-    # maybe TODO handle this in any way?
-    if not os.path.exists(path):
-
+    else:
       # content is not always in feed, use summary
       if "content" in entry:
         content = entry.content[0].value
