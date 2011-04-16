@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- encoding:utf-8 -*-
 
+import commands
 import ConfigParser
 import feedparser
 import os
@@ -10,7 +11,6 @@ import json
 from email.mime.text import MIMEText
 from email.utils import formatdate
 from hashlib import md5
-
 
 # init conf object
 conf = ConfigParser.ConfigParser()
@@ -30,8 +30,22 @@ except IOError, ValueError:
 entries = []
 
 for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
-  # some output
-  print_optionally(feed)
+
+  # means commented out
+  if not feed or feed[0] == "#": continue
+
+  split      = feed.split() 
+  nick       = None
+  bodyfilter = None
+
+  if len(split) > 1:
+    feed = split[1]
+    nick = split[0]
+
+  if len(split) > 2:
+    bodyfilter = split[2]
+
+  print_optionally((nick or "") + (nick and " ") + feed)
 
   if not cache.has_key(feed):
     cache[feed] = {"etag": None, "modified": None}
@@ -67,8 +81,12 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
         continue # If the entry has neither link nor href element, it's clearly not a feed -- skip it.
     else:
       lnk = entry.link
+      
+    directory = os.path.join(conf.get("conf", "messages"), (nick or ""))
+    if nick and not os.path.exists(directory):
+      os.mkdir(directory)
 
-    path = os.path.join(conf.get("conf", "messages"), lnk.replace("/", "!"))
+    path = os.path.join(directory, lnk.replace("/", "!"))
 
     # python don't like long pathnames
     if len(path) > 256:
@@ -95,15 +113,22 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
         print_optionally("error decoding entry: " + path)
         continue
 
+      if bodyfilter:
+        content = commands.getoutput(conf.get("filters", bodyfilter).replace("{url}", link))
+      
       # create text/html message only
       msg = MIMEText(content, "html")
 
       msg['Subject'] = title
       msg['From']    = feed_name + " <sluk@" + os.uname()[1] + ">"
       msg['To']      = "sluk@" + os.uname()[1]
+
       if hasattr(entry, "updated_parsed"):
-        msg['Date']    = formatdate(time.mktime(entry.updated_parsed))
-      msg['X-Entry-URL'] = link
+        msg['Date']  = formatdate(time.mktime(entry.updated_parsed))
+      else:
+        msg['Date']  = formatdate(time.time())
+
+      msg['X-Entry-URL'] = msg['Message-ID'] = link
 
       # write to file
       entries.append({"path": path,
