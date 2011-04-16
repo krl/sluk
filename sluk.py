@@ -40,12 +40,16 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
 
   if len(split) > 1:
     feed = split[1]
-    nick = split[0]
+    nick = split[0].decode("utf-8")
 
   if len(split) > 2:
     bodyfilter = split[2]
 
-  print_optionally((nick or "") + (nick and " ") + feed)
+
+  if nick:
+    print_optionally(nick + " " + feed)
+  else:
+    print_optionally(feed)
 
   if not cache.has_key(feed):
     cache[feed] = {"etag": None, "modified": None}
