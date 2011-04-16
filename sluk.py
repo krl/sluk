@@ -11,14 +11,26 @@ import json
 import commands
 import feedparser
 
-# init conf object
-conf = ConfigParser.ConfigParser()
-conf.readfp(open(os.path.expanduser('~/.slukrc')))
-
+# function definitions
 def print_optionally(string):
   "print the given string if the config option quiet is false or not set"
   if not conf.has_option("conf", "quiet") or not conf.getboolean("conf", "quiet"):
     print string
+
+# initialize user config
+conf = ConfigParser.ConfigParser()
+
+if os.getenv("SLUK_CONFIG"):
+  config_file = os.path.expanduser(os.path.expandvars(os.getenv("SLUK_CONFIG")))
+else:
+  config_file = os.path.expanduser("~/.slukrc")
+
+try:
+  conf.readfp(open(config_file))
+  print_optionally("I: Using config file '%s'" % config_file)
+except IOError:
+  print("E: Config file not found '%s'" % config_file)
+  exit(1)
 
 # initialize cache
 try:
