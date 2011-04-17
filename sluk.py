@@ -1,16 +1,15 @@
 #!/usr/bin/python
 # -*- mode: Python; encoding: utf-8; indent-tabs-mode: nil; tab-width: 2 -*-
 
-import commands
 import ConfigParser
-import feedparser
+from hashlib import md5
 import os
 import time
-import json
-
 from email.mime.text import MIMEText
 from email.utils import formatdate
-from hashlib import md5
+import json
+import commands
+import feedparser
 
 # init conf object
 conf = ConfigParser.ConfigParser()
