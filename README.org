@@ -17,9 +17,11 @@ On invocation the program will look for the ~/.slukrc file, which should contain
 : feed_list = /home/user/.sluk_feeds
 : cache     = /home/user/.sluk_cache
 : quiet     = true
+: [filters]
+: readproxy = readproxy {url}
 
 If the option "quiet" is either missing or set to "false", sluk will babble away mercilessly.
 
-The feed list should be a newline separated list of URL:s
+The feed list should be a newline separated list of URL:s, or on the form "name URL filter". Filters are mostly used to transform summary entries to full-text entries.
 
 Sluk uses etags and last-modified headers in order to save server bandwith.
