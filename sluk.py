@@ -34,7 +34,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
   # means commented out
   if not feed or feed[0] == "#": continue
 
-  split      = feed.split() 
+  split      = feed.split()
   nick       = None
   bodyfilter = None
 
@@ -63,7 +63,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
   except:
     print_optionally("parsing failed!")
     continue
-    
+
   if 'status' in parsed and parsed.status == 304:
     print_optionally(" - server says not changed")
     continue
@@ -75,7 +75,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
   num_written = 0
 
   for entry in parsed.entries:
-    
+
     lnk = ""
     if 'link' not in entry:
       if 'enclosures' in entry and 'href' in entry.enclosures[0]:
@@ -85,7 +85,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
         continue # If the entry has neither link nor href element, it's clearly not a feed -- skip it.
     else:
       lnk = entry.link
-      
+
     directory = os.path.join(conf.get("conf", "messages"), (nick or ""))
     if nick and not os.path.exists(directory):
       os.mkdir(directory)
@@ -96,7 +96,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
     if len(path) > 256:
       path = os.path.join(conf.get("conf", "messages"), md5(path).hexdigest())
 
-    # ignore updated feeds for now 
+    # ignore updated feeds for now
     # maybe TODO handle this in any way?
     if not os.path.exists(path):
 
@@ -108,7 +108,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
       else:
         content = lnk
 
-      try: 
+      try:
         content   = content.encode(parsed.encoding)
         feed_name = parsed['feed']['title'].encode(parsed.encoding)
         title     = entry['title'].encode(parsed.encoding)
@@ -117,12 +117,12 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
         print_optionally("error decoding entry: " + path)
         continue
       except KeyError:
-        print_optionally("error parsing entry: " + path) 
+        print_optionally("error parsing entry: " + path)
         continue
 
       if bodyfilter:
         content = commands.getoutput(conf.get("filters", bodyfilter).replace("{url}", link))
-      
+
       # create text/html message only
       msg = MIMEText(content, "html")
 
@@ -140,7 +140,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
       # write to file
       entries.append({"path": path,
                       "body": msg.as_string()})
-                    
+
       num_written += 1
 
   if num_written == 1:
