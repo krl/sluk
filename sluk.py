@@ -157,6 +157,7 @@ for x in entries:
 
 # update cache
 
+print_optionally("updating cache file: " + conf.get("conf", "cache"))
 cache_file = open(conf.get("conf", "cache"), "w")
 cache_file.write(json.dumps(cache))
 cache_file.close()
