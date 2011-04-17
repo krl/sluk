@@ -86,8 +86,8 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
       lnk = entry.link
 
     directory = os.path.join(conf.get("conf", "messages"), (nick or ""))
-    if nick and not os.path.exists(directory):
-      os.mkdir(directory)
+    if not os.path.exists(directory):
+      os.makedirs(directory)
 
     path = os.path.join(directory, lnk.replace("/", "!"))
 
