@@ -13,13 +13,12 @@ feedparser
 On invocation the program will look for a configuration file path in $SLUK_CONFIG (if set) or fall back to "~/.slukrc", which should contain something like this:
 
 : [conf]
-: messages      = /home/user/mail/sluk/
-: feed_list     = /home/user/.sluk_feeds
-: cache_feeds   = /home/user/.sluk_cache_feeds
-: cache_entries = /home/user/.sluk_cache_entries
-: quiet         = true
+: messages  = /home/user/mail/sluk/
+: feed_list = /home/user/.sluk_feeds
+: cache     = /home/user/.sluk_cache
+: quiet     = true
 : [filters]
-: readproxy     = readproxy {url}
+: readproxy = readproxy {url}
 
 If the option "quiet" is either missing or set to "false", sluk will babble away mercilessly.
 

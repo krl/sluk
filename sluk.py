@@ -38,33 +38,10 @@ except IOError:
   exit(1)
 
 # initialize cache
-if not conf.has_option("conf", "cache_feeds"):
-  cache_feeds_file = conf.get("conf", "cache")
-else:
-  cache_feeds_file = conf.get("conf", "cache_feeds")
-
-if not conf.has_option("conf", "cache_entries"):
-  cache_entries_file = conf.get("conf", "cache") + "_entries"
-else:
-  cache_entries_file = conf.get("conf", "cache_entries")
-
 try:
-  with open(cache_feeds_file, 'r') as f:
-    print_optionally("I: Using feeds cache file: '%s'" % cache_feeds_file)
-    cache = json.loads(f.read())
+  cache = json.loads(open(conf.get("conf", "cache")).read())
 except IOError, ValueError:
-  print_optionally("E: Failed loading feeds cache file: '%s'" % cache_feeds_file)
   cache = {}
-
-try:
-  with open(cache_entries_file, 'r') as f:
-    print_optionally("I: Using entries cache file: '%s'" % cache_entries_file)
-    cache_entries = f.read().split("\n")
-except IOError:
-  print_optionally("E: Failed loading entries cache file: '%s'" % cache_entries_file)
-  cache_entries = ""
-
-cache_entries_new = ""
 
 entries = []
 
@@ -124,11 +101,6 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
         continue # If the entry has neither link nor href element, it's clearly not a feed -- skip it.
     else:
       lnk = entry.link
-
-    if not lnk in cache_entries:
-      cache_entries_new += lnk + "\n"
-    else:
-      continue
 
     directory = os.path.join(conf.get("conf", "messages"), (nick or ""))
     if not os.path.exists(directory):
@@ -204,16 +176,7 @@ for x in entries:
 
 # update cache
 
-try:
-  print_optionally("I: Updating feeds cache: '%s'" % cache_feeds_file)
-  with open(cache_feeds_file, 'w') as f:
-    f.write(json.dumps(cache))
-except IOError:
-  print_optionally("E: Failed writing to feeds cache file: '%s'" % cache_feeds_file)
-
-try:
-  print_optionally("I: Updating entries cache: '%s'" % cache_entries_file)
-  with open(cache_entries_file, 'a') as f:
-    f.write(cache_entries_new)
-except IOError:
-  print_optionally("E: Failed writing to entries cache file: '%s'" % cache_entries_file)
+print_optionally("updating cache file: " + conf.get("conf", "cache"))
+cache_file = open(conf.get("conf", "cache"), "w")
+cache_file.write(json.dumps(cache))
+cache_file.close()
