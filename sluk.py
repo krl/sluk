@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- encoding:utf-8 -*-
+# -*- mode: Python; encoding: utf-8; indent-tabs-mode: nil; tab-width: 2 -*-
 
 import commands
 import ConfigParser
