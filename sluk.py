@@ -43,6 +43,22 @@ try:
 except IOError, ValueError:
   cache = {}
 
+
+# Simple string concatenation instead of os.path.join(),
+# we want "cache_entries", not "cache/_entries" !
+cache_entries_file = conf.get("conf", "cache") + "_entries"
+
+try:
+  # "with" ensures everything is nicely cleaned up afterwards
+  # (closed, released, ...) without needing specific "finally:" code.
+  with open(cache_entries_file, 'r') as f:
+    cache_entries = f.read().split("\n")
+except IOError:
+  cache_entries = ""
+
+cache_entries_new = ""
+
+
 entries = []
 
 for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
@@ -101,6 +117,14 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
         continue # If the entry has neither link nor href element, it's clearly not a feed -- skip it.
     else:
       lnk = entry.link
+
+    # If lnk is NOT in cache_entries, append it to
+    # cache_entries_new and proceed as usual.
+    # Otherwise, drop this entry and start processing the next.
+    if not lnk in cache_entries:
+      cache_entries_new += lnk + "\n"
+    else:
+      continue
 
     directory = os.path.join(conf.get("conf", "messages"), (nick or ""))
     if not os.path.exists(directory):
@@ -180,3 +204,10 @@ print_optionally("updating cache file: " + conf.get("conf", "cache"))
 cache_file = open(conf.get("conf", "cache"), "w")
 cache_file.write(json.dumps(cache))
 cache_file.close()
+
+try:
+  print_optionally("I: Updating entries cache: '%s'" % cache_entries_file)
+  with open(cache_entries_file, 'a') as f:  # append, not write
+    f.write(cache_entries_new)
+except IOError:
+  print_optionally("E: Failed writing to entries cache file: '%s'" % cache_entries_file)
