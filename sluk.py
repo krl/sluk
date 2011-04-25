@@ -208,6 +208,6 @@ cache_file.close()
 try:
   print_optionally("I: Updating entries cache: '%s'" % cache_entries_file)
   with open(cache_entries_file, 'a') as f:  # append, not write
-    f.write(cache_entries_new)
+    f.write(cache_entries_new.encode("utf-8"))
 except IOError:
   print_optionally("E: Failed writing to entries cache file: '%s'" % cache_entries_file)
