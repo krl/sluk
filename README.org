@@ -10,7 +10,7 @@ Sluk does not send mail.
 feedparser
   
 * Usage
-On invocation the program will look for the ~/.slukrc file, which should contain something like this:
+On invocation the program will look for a configuration file path in $SLUK_CONFIG (if set) or fall back to "~/.slukrc", which should contain something like this:
 
 : [conf]
 : messages  = /home/user/mail/sluk/

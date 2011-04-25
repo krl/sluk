@@ -1,31 +1,63 @@
 #!/usr/bin/python
-# -*- encoding:utf-8 -*-
+# -*- mode: Python; encoding: utf-8; indent-tabs-mode: nil; tab-width: 2 -*-
 
-import commands
 import ConfigParser
-import feedparser
 import os
 import time
-import json
-
+import socket
 from email.mime.text import MIMEText
 from email.utils import formatdate
-from hashlib import md5
+import json
+import commands
+import feedparser
 
-# init conf object
-conf = ConfigParser.ConfigParser()
-conf.readfp(open(os.path.expanduser('~/.slukrc')))
-
+# function definitions
 def print_optionally(string):
   "print the given string if the config option quiet is false or not set"
   if not conf.has_option("conf", "quiet") or not conf.getboolean("conf", "quiet"):
     print string
+
+def create_unique_filename():
+  "Create a unique maildir-style filename. See http://cr.yp.to/proto/maildir.html"
+  filename = repr(time.time()) + "_" + str(os.getpid()) + "." + socket.gethostname() + ":2,"
+  return filename
+
+# initialize user config
+conf = ConfigParser.ConfigParser()
+
+if os.getenv("SLUK_CONFIG"):
+  config_file = os.path.expanduser(os.path.expandvars(os.getenv("SLUK_CONFIG")))
+else:
+  config_file = os.path.expanduser("~/.slukrc")
+
+try:
+  conf.readfp(open(config_file))
+  print_optionally("I: Using config file '%s'" % config_file)
+except IOError:
+  print("E: Config file not found '%s'" % config_file)
+  exit(1)
 
 # initialize cache
 try:
   cache = json.loads(open(conf.get("conf", "cache")).read())
 except IOError, ValueError:
   cache = {}
+
+
+# Simple string concatenation instead of os.path.join(),
+# we want "cache_entries", not "cache/_entries" !
+cache_entries_file = conf.get("conf", "cache") + "_entries"
+
+try:
+  # "with" ensures everything is nicely cleaned up afterwards
+  # (closed, released, ...) without needing specific "finally:" code.
+  with open(cache_entries_file, 'r') as f:
+    cache_entries = f.read().split("\n")
+except IOError:
+  cache_entries = ""
+
+cache_entries_new = ""
+
 
 entries = []
 
@@ -34,7 +66,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
   # means commented out
   if not feed or feed[0] == "#": continue
 
-  split      = feed.split() 
+  split      = feed.split()
   nick       = None
   bodyfilter = None
 
@@ -63,7 +95,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
   except:
     print_optionally("parsing failed!")
     continue
-    
+
   if 'status' in parsed and parsed.status == 304:
     print_optionally(" - server says not changed")
     continue
@@ -75,7 +107,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
   num_written = 0
 
   for entry in parsed.entries:
-    
+
     lnk = ""
     if 'link' not in entry:
       if 'enclosures' in entry and 'href' in entry.enclosures[0]:
@@ -85,21 +117,31 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
         continue # If the entry has neither link nor href element, it's clearly not a feed -- skip it.
     else:
       lnk = entry.link
-      
+
+    # If lnk is NOT in cache_entries, append it to
+    # cache_entries_new and proceed as usual.
+    # Otherwise, drop this entry and start processing the next.
+    if not lnk in cache_entries:
+      cache_entries_new += lnk + "\n"
+    else:
+      continue
+
     directory = os.path.join(conf.get("conf", "messages"), (nick or ""))
-    if nick and not os.path.exists(directory):
-      os.mkdir(directory)
+    if not os.path.exists(directory):
+      os.makedirs(directory)
 
-    path = os.path.join(directory, lnk.replace("/", "!"))
+    # we like unique filenames
+    path = ""
+    while not path or os.path.exists(path):
+      path = os.path.join(directory, create_unique_filename())
 
-    # python don't like long pathnames
-    if len(path) > 256:
-      path = os.path.join(conf.get("conf", "messages"), md5(path).hexdigest())
+    # this should never ever occur (although never say never ever),
+    # but leave it here anyway since removing it would alter indentation
+    # for about 40 lines, and we don't like obese patches for simple changes
+    if os.path.exists(path):
+      print("E: File already exists: '%s'  -- Skipping..." % path)
 
-    # ignore updated feeds for now 
-    # maybe TODO handle this in any way?
-    if not os.path.exists(path):
-
+    else:
       # content is not always in feed, use summary
       if "content" in entry:
         content = entry.content[0].value
@@ -108,7 +150,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
       else:
         content = lnk
 
-      try: 
+      try:
         content   = content.encode(parsed.encoding)
         feed_name = parsed['feed']['title'].encode(parsed.encoding)
         title     = entry['title'].encode(parsed.encoding)
@@ -117,12 +159,12 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
         print_optionally("error decoding entry: " + path)
         continue
       except KeyError:
-        print_optionally("error parsing entry: " + path) 
+        print_optionally("error parsing entry: " + path)
         continue
 
       if bodyfilter:
         content = commands.getoutput(conf.get("filters", bodyfilter).replace("{url}", link))
-      
+
       # create text/html message only
       msg = MIMEText(content, "html")
 
@@ -140,7 +182,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
       # write to file
       entries.append({"path": path,
                       "body": msg.as_string()})
-                    
+
       num_written += 1
 
   if num_written == 1:
@@ -158,6 +200,14 @@ for x in entries:
 
 # update cache
 
+print_optionally("updating cache file: " + conf.get("conf", "cache"))
 cache_file = open(conf.get("conf", "cache"), "w")
 cache_file.write(json.dumps(cache))
 cache_file.close()
+
+try:
+  print_optionally("I: Updating entries cache: '%s'" % cache_entries_file)
+  with open(cache_entries_file, 'a') as f:  # append, not write
+    f.write(cache_entries_new)
+except IOError:
+  print_optionally("E: Failed writing to entries cache file: '%s'" % cache_entries_file)
