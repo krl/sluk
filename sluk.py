@@ -285,6 +285,7 @@ elif sys.argv[1] == 'help':
   exit()
 
 else:
-  print "Unknown command."
+  print "Unknown command '%s'." % (sys.argv[1])
+  print "See '%s help' for more info." % (os.path.basename(sys.argv[0]))
   usage(False)
   exit(1)
