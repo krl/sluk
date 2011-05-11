@@ -11,6 +11,9 @@ import json
 import commands
 import feedparser
 
+# initialize user config
+conf = ConfigParser.ConfigParser()
+
 ##################################################
 
 # function definitions
@@ -23,6 +26,21 @@ def create_unique_filename():
   "Create a unique maildir-style filename. See http://cr.yp.to/proto/maildir.html"
   filename = repr(time.time()) + "_" + str(os.getpid()) + "." + socket.gethostname() + ":2,"
   return filename
+
+
+def initialize_config():
+  if os.getenv("SLUK_CONFIG"):
+    config_file = os.path.expanduser(os.path.expandvars(os.getenv("SLUK_CONFIG")))
+  else:
+    config_file = os.path.expanduser("~/.slukrc")
+
+  try:
+    conf.readfp(open(config_file))
+    print_optionally("I: Using config file '%s'" % config_file)
+  except IOError:
+    print("E: Config file not found '%s'" % config_file)
+    exit(1)
+
 
 def update_feeds():
   "update all feeds"
@@ -198,19 +216,6 @@ def update_feeds():
 
 ##################################################
 
-# initialize user config
-conf = ConfigParser.ConfigParser()
-
-if os.getenv("SLUK_CONFIG"):
-  config_file = os.path.expanduser(os.path.expandvars(os.getenv("SLUK_CONFIG")))
-else:
-  config_file = os.path.expanduser("~/.slukrc")
-
-try:
-  conf.readfp(open(config_file))
-  print_optionally("I: Using config file '%s'" % config_file)
-except IOError:
-  print("E: Config file not found '%s'" % config_file)
-  exit(1)
+initialize_config()
 
 update_feeds()
