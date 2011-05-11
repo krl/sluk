@@ -2,6 +2,7 @@
 # -*- mode: Python; encoding: utf-8; indent-tabs-mode: nil; tab-width: 2 -*-
 
 import ConfigParser
+import sys
 import os
 import time
 import socket
@@ -15,8 +16,20 @@ import feedparser
 conf = ConfigParser.ConfigParser()
 
 ##################################################
+# Function definitions
 
-# function definitions
+def usage(head=True):
+  if head:
+    print "Sluk rss feed message delivery"
+  print """
+Usage: sluk <command>
+
+Available commands:
+
+  update             Update all feeds.
+  help               This help message.
+"""
+
 def print_optionally(string):
   "print the given string if the config option quiet is false or not set"
   if not conf.has_option("conf", "quiet") or not conf.getboolean("conf", "quiet"):
@@ -215,7 +228,21 @@ def update_feeds():
     print_optionally("E: Failed writing to entries cache file: '%s'" % cache_entries_file)
 
 ##################################################
+# Main
 
-initialize_config()
+if len(sys.argv) == 1:
+  usage()
+  exit(1)
 
-update_feeds()
+if sys.argv[1] == 'update':
+  initialize_config()
+  update_feeds()
+
+elif sys.argv[1] == 'help':
+  usage()
+  exit()
+
+else:
+  print "Unknown command."
+  usage(False)
+  exit(1)
