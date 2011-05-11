@@ -26,6 +26,7 @@ Usage: sluk <command>
 
 Available commands:
 
+  add <name> <url>   Add feed.
   update             Update all feeds.
   help               This help message.
 """
@@ -39,6 +40,11 @@ def create_unique_filename():
   "Create a unique maildir-style filename. See http://cr.yp.to/proto/maildir.html"
   filename = repr(time.time()) + "_" + str(os.getpid()) + "." + socket.gethostname() + ":2,"
   return filename
+
+def is_feed(feed):
+  "True if argument is a valid feed, false otherwise."
+  feed_version = feedparser.parse(feed).version
+  return not (feed_version == "" or feed_version == None)
 
 
 def initialize_config():
@@ -54,6 +60,32 @@ def initialize_config():
     print("E: Config file not found '%s'" % config_file)
     exit(1)
 
+
+def add_feed(name, url):
+  if not is_feed(url):
+    print "url is invalid."
+    exit(1)
+
+  feed_list = os.path.expanduser(conf.get("conf", "feed_list"))
+
+  if not os.path.exists(feed_list):
+    f = open(feed_list, 'w').close()
+
+  with open(feed_list, 'r') as f:
+    for line in f:
+      line = line.strip(' \n')
+      feed = line.split(' ')
+      if name == feed[0]:
+        print "Feed '%s' already in collection (%s)." % (name,url)
+        exit(1)
+      if url == feed[1]:
+        print "Feed '%s' already in collection as '%s'." % (url,name)
+        exit(1)
+  f.close()
+  f = open(feed_list, 'a')
+  f.write("%s %s\n" % (name,url))
+  print "Feed '%s' added to collection." % name
+  f.close()
 
 def update_feeds():
   "update all feeds"
@@ -234,7 +266,17 @@ if len(sys.argv) == 1:
   usage()
   exit(1)
 
-if sys.argv[1] == 'update':
+if sys.argv[1] == 'add':
+  if len(sys.argv) < 4:
+    print "Add: must specify both name and url."
+    print "See '%s help' for more info." % (os.path.basename(sys.argv[0]))
+    exit(1)
+  name = sys.argv[2]
+  url = sys.argv[3]
+  initialize_config()
+  add_feed(name, url)
+
+elif sys.argv[1] == 'update':
   initialize_config()
   update_feeds()
 
