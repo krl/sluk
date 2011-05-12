@@ -121,7 +121,7 @@ for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
     # If lnk is NOT in cache_entries, append it to
     # cache_entries_new and proceed as usual.
     # Otherwise, drop this entry and start processing the next.
-    if not lnk in cache_entries:
+    if not lnk.encode(parsed.encoding) in cache_entries:
       cache_entries_new += lnk + "\n"
     else:
       continue
