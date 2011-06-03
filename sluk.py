@@ -95,9 +95,11 @@ def remove_feed(name):
         continue
       else:
         lines.append(line)
-
-  with open(conf.get("conf", "feed_list"), 'w') as f:
-    f.writelines(lines)
+  if found:
+    with open(conf.get("conf", "feed_list"), 'w') as f:
+      f.writelines(lines)
+  else:
+    print "No feed named %s found in list." % name
   
 def add_feed(name, url):
   if not is_feed(url):
