@@ -90,7 +90,7 @@ def remove_feed(name):
     for line in f:
       nick, url, bodyfilter = parse_feed_line(line)
       if nick == name:
-        print "found name %s at pos %d." % (nick, f.tell())
+        print "Removed feed named %s in %s." % (nick, conf.get("conf", "feed_list"))
         found = True
         continue
       else:
