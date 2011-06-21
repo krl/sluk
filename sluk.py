@@ -30,6 +30,8 @@ Available commands:
   add <name> <url>   Add feed.
   update             Update all feeds.
   remove <name>      Remove the feed named <name>.
+  search <query>     Search the feed collection for feeds with nickname
+                     or URL similar to <query>.
   help               This help message.
 """
 
@@ -82,6 +84,23 @@ def parse_feed_line(feed):
 
   return (nick, feed, bodyfilter)
   
+def search(query):
+  try:
+    from Levenshtein import ratio as ratio
+  except ImportError:
+    print "Error: You need the Levenshtein module (python-levenshtein in Debian) to search."
+    exit(1)
+
+  def sort_of_similar(a, b):
+    if not a == None and not b == None:
+      return ratio(a.encode("utf-8"), b.encode("utf-8")) > 0.50
+
+  with open(conf.get("conf", "feed_list")) as f:
+    for line in f:
+      nick, url, bodyfilter = parse_feed_line(line)
+      if sort_of_similar(query, nick) or sort_of_similar(query, url):
+        print nick, url
+      
 
 def remove_feed(name):
   found = False
@@ -317,6 +336,12 @@ elif sys.argv[1] == 'update':
 
 elif sys.argv[1] == 'help':
   usage()
+  exit()
+
+elif sys.argv[1] == 'search':
+  # make function here. Use Levenshtein. Catch import errors.
+  initialize_config()
+  search(" ".join(sys.argv[2:]))
   exit()
 
 else:
