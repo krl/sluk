@@ -6,14 +6,17 @@
 # Of course, you may want to replace my queries and base path
 # variables, as they probably don't apply to you.
 
-import os.path
-import notmuch
-import operator
+import os.path, notmuch, operator, ConfigParser
 
+conf = ConfigParser.ConfigParser()
+
+# CUSTOMIZE THESE VARIABLES TO YOUR LIKING
 rek = notmuch.Database().create_query("tag:feeds and tag:rek")
 feeds = notmuch.Database().create_query("tag:feeds")
+config_file = os.path.expanduser("~/.slukrc")
 
-base = os.path.expanduser("~/inmail/sluk/")
+conf.readfp(open(config_file))
+base = os.path.expanduser(conf.get("conf", "messages"))
 
 results = dict()
 no_reks = dict()
