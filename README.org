@@ -8,7 +8,7 @@ Sluk does not send mail.
 
 * Requirements
 feedparser
-  
+
 * Usage
 On invocation the program will look for a configuration file path in $SLUK_CONFIG (if set) or fall back to "~/.slukrc", which should contain something like this:
 
