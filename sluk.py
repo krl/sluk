@@ -13,6 +13,10 @@ import commands
 import feedparser
 import fileinput
 
+# Run parsed data through HTML Tidy/uTidy in order to make sluk not
+# barf on slightly invalid feeds.
+feedparser.TIDY_MARKUP=1
+
 # initialize user config
 conf = ConfigParser.ConfigParser()
 
@@ -171,7 +175,7 @@ def update_feeds():
   entries = []
 
   for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
-
+    
     nick, feed, bodyfilter = parse_feed_line(feed)
 
     if nick:
@@ -189,7 +193,7 @@ def update_feeds():
                                 modified = cache[feed]["modified"] and \
                                   time.gmtime(cache[feed]["modified"]))
     except:
-      print_optionally("parsing failed!")
+      print("parsing %s failed!" % nick)
       continue
 
     if 'status' in parsed and parsed.status == 304:

@@ -18,6 +18,9 @@ config_file = os.path.expanduser("~/.slukrc")
 conf.readfp(open(config_file))
 base = os.path.expanduser(conf.get("conf", "messages"))
 
+registered_feeds = [a.split(' ')[0] for a in
+                    open(conf.get("conf", "feed_list")).read().split('\n')]
+
 results = dict()
 no_reks = dict()
 
@@ -47,7 +50,8 @@ print "The following feeds had recommended posts (sorted by decending ratio of r
 for s in sorted(results.iteritems(),
              cmp=lambda x, y: cmp(*ratio_of_messages(x, y)), reverse=True):
     name, stats = s
-    print "    »%s«: %d of %d (%.2f%%)" % (name, stats[0], stats[1], 100*float(stats[0])/float(stats[1]))
+    if name in registered_feeds:
+        print "    »%s«: %d of %d (%.2f%%)" % (name, stats[0], stats[1], 100*float(stats[0])/float(stats[1]))
 
 print ""
 print "The following feeds lacked any recommended posts:"
