@@ -12,11 +12,6 @@ import json
 import commands
 import feedparser
 import fileinput
-import tidy
-
-# Run parsed data through HTML Tidy/uTidy in order to make sluk not
-# barf on slightly invalid feeds.
-feedparser.TIDY_MARKUP=1
 
 # initialize user config
 conf = ConfigParser.ConfigParser()
