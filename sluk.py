@@ -29,8 +29,9 @@ Available commands:
 
   add <name> <url>   Add feed.
   update             Update all feeds.
+  update <name>      Update only the feed named <name>.
   remove <name>      Remove the feed named <name>.
-  search <query>     Search the feed collection for feeds with nickname
+  search <query>     Search the feed collection for feeds with nickname.
                      or URL similar to <query>.
   help               This help message.
 """
@@ -146,7 +147,7 @@ def add_feed(name, url):
   print "Feed '%s' added to collection." % name
   f.close()
 
-def update_feeds():
+def update_feeds(update_feed_name="All"):
   "update all feeds"
   # initialize cache
   try:
@@ -173,6 +174,9 @@ def update_feeds():
   for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
     
     nick, feed, bodyfilter = parse_feed_line(feed)
+    if update_feed_name != "All" and update_feed_name != nick:
+      # These aren't the feeds you're looking for.
+      continue
 
     if nick:
       print_optionally(nick + " " + feed)
@@ -189,7 +193,7 @@ def update_feeds():
                                 modified = cache[feed]["modified"] and \
                                   time.gmtime(cache[feed]["modified"]))
     except:
-      print("parsing %s failed!" % nick)
+      print("E: parsing %s failed!" % nick)
       continue
 
     if 'status' in parsed and parsed.status == 304:
@@ -332,7 +336,14 @@ elif sys.argv[1] == 'remove':
   remove_feed(name)
 elif sys.argv[1] == 'update':
   initialize_config()
-  update_feeds()
+  if len(sys.argv) < 3:
+    # Fallback to old behavior.
+    update_feeds()
+  elif len(sys.argv) == 3:
+    update_feeds(sys.argv[2])
+  else:
+    print "Update: must specify either one or zero names."
+    print "See '%s help' for more info." % (os.path.basename(sys.argv[0]))
 
 elif sys.argv[1] == 'help':
   usage()
