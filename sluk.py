@@ -182,7 +182,7 @@ def update_feeds(update_feed_name="All"):
       print_optionally(nick + " " + feed)
     else:
       print_optionally(feed)
-
+      
     if feed not in cache:
       cache[feed] = {"etag": None, "modified": None}
 
@@ -201,6 +201,7 @@ def update_feeds(update_feed_name="All"):
       continue
 
     cache[feed]["etag"]     = parsed.etag if hasattr(parsed, "etag") else None
+    
     cache[feed]["modified"] = time.mktime(parsed.modified) if hasattr(parsed, "modified") else None
 
     # count
@@ -220,11 +221,12 @@ def update_feeds(update_feed_name="All"):
       # If lnk is NOT in cache_entries, append it to
       # cache_entries_new and proceed as usual.
       # Otherwise, drop this entry and start processing the next.
+
       if not lnk.encode(parsed.encoding) in cache_entries:
         cache_entries_new += lnk + "\n"
       else:
         continue
-
+      
       directory = os.path.join(conf.get("conf", "messages"), (nick or ""))
       if not os.path.exists(directory):
         os.makedirs(directory)
@@ -233,6 +235,7 @@ def update_feeds(update_feed_name="All"):
       path = ""
       while not path or os.path.exists(path):
         path = os.path.join(directory, create_unique_filename())
+
 
       # this should never ever occur (although never say never ever),
       # but leave it here anyway since removing it would alter indentation
@@ -254,10 +257,10 @@ def update_feeds(update_feed_name="All"):
           title     = entry['title'].encode(parsed.encoding)
           link      = lnk.encode(parsed.encoding)
         except UnicodeEncodeError:
-          print_optionally("error decoding entry: " + path)
+          print("E: error decoding entry: " + path)
           continue
         except KeyError:
-          print_optionally("error parsing entry: " + path)
+          print("E: error parsing entry: " + path)
           continue
 
         if bodyfilter:
