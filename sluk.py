@@ -12,6 +12,7 @@ import json
 import commands
 import feedparser
 import fileinput
+import tidy
 
 # Run parsed data through HTML Tidy/uTidy in order to make sluk not
 # barf on slightly invalid feeds.
