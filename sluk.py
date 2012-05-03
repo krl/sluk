@@ -273,7 +273,7 @@ def update_feeds(update_feed_name="All"):
         msg['From']    = feed_name + " <sluk@" + os.uname()[1] + ">"
         msg['To']      = "sluk@" + os.uname()[1]
 
-        if hasattr(entry, "updated_parsed"):
+        if hasattr(entry, "updated_parsed") and entry.updated_parsed != None:
           msg['Date']  = formatdate(time.mktime(entry.updated_parsed))
         else:
           msg['Date']  = formatdate(time.time())
