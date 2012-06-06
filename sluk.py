@@ -202,7 +202,7 @@ def update_feeds(update_feed_name="All"):
 
     cache[feed]["etag"]     = parsed.etag if hasattr(parsed, "etag") else None
     
-    cache[feed]["modified"] = time.mktime(parsed.modified) if hasattr(parsed, "modified") else None
+    cache[feed]["modified"] = time.mktime(time.strptime(parsed.modified, "%a, %d %b %Y %H:%M:%S %Z")) if hasattr(parsed, "modified") else None
 
     # count
     num_written = 0
@@ -210,7 +210,7 @@ def update_feeds(update_feed_name="All"):
     for entry in parsed.entries:
       lnk = ""
       if 'link' not in entry:
-        if 'enclosures' in entry and 'href' in entry.enclosures[0]:
+        if 'enclosures' in entry and len(enclosures) > 0 and 'href' in entry.enclosures[0]:
           lnk = entry.enclosures[0].href
         else:
           print_optionally("Warning! Skipping entry in feed %s that lacks both href enclosure and entry element!" % feed)
