@@ -183,15 +183,26 @@ def update_feeds(update_feed_name="All"):
     else:
       print_optionally(feed)
       
+
     if feed not in cache:
       cache[feed] = {"etag": None, "modified": None}
 
     try:
       parsed = feedparser.parse(feed,
-                                etag     = cache[feed]["etag"],
-                                # needs time in tuple form
-                                modified = cache[feed]["modified"] and \
-                                  time.gmtime(cache[feed]["modified"]))
+                                etag     = cache[feed]["etag"])
+
+      # Needs time in tuple form. Somewhere, there was a bug that made
+      # it necessary to do this outside of the call to feedparser,
+      # since that would turn the time tuples to strings and mess
+      # everything up.
+      parsed.modified = time.gmtime(cache[feed]["modified"])
+
+
+      # If this isn't true, everything goes bananas. Better fail early.
+      if hasattr(parsed, "modified"):
+         assert(type(parsed.modified) == time.struct_time)
+
+    
     except:
       print("E: parsing %s failed!" % nick)
       continue
@@ -202,7 +213,7 @@ def update_feeds(update_feed_name="All"):
 
     cache[feed]["etag"]     = parsed.etag if hasattr(parsed, "etag") else None
     
-    cache[feed]["modified"] = time.mktime(time.strptime(parsed.modified, "%a, %d %b %Y %H:%M:%S %Z")) if hasattr(parsed, "modified") else None
+    cache[feed]["modified"] = time.mktime(parsed.modified) if hasattr(parsed, "modified") else None
 
     # count
     num_written = 0
