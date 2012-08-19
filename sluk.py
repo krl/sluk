@@ -12,6 +12,7 @@ import json
 import commands
 import feedparser
 import fileinput
+import traceback
 
 # initialize user config
 conf = ConfigParser.ConfigParser()
@@ -203,8 +204,13 @@ def update_feeds(update_feed_name="All"):
          assert(type(parsed.modified) == time.struct_time)
 
     
-    except:
-      print("E: parsing %s failed!" % nick)
+    except Exception as e:
+      print("E: parsing %s failed! Error was \"%s\". Traceback:" % (nick, e))
+      exc_type, exc_value, exc_traceback = sys.exc_info()
+      print('-'*60)
+      traceback.print_exception(exc_type, exc_value, exc_traceback,
+                              limit=2)
+      print('-'*60)
       continue
 
     if 'status' in parsed and parsed.status == 304:
