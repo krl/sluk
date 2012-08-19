@@ -189,8 +189,9 @@ def update_feeds(update_feed_name="All"):
       cache[feed] = {"etag": None, "modified": None}
 
     try:
-      parsed = feedparser.parse(feed,
-                                etag     = cache[feed]["etag"])
+      parsed = feedparser.parse(feed, etag
+                                = cache[feed]["etag"])
+      
 
       # Needs time in tuple form. Somewhere, there was a bug that made
       # it necessary to do this outside of the call to feedparser,
@@ -209,7 +210,7 @@ def update_feeds(update_feed_name="All"):
       exc_type, exc_value, exc_traceback = sys.exc_info()
       print('-'*60)
       traceback.print_exception(exc_type, exc_value, exc_traceback,
-                              limit=2)
+                              limit=3)
       print('-'*60)
       continue
 
