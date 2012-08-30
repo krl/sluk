@@ -51,13 +51,14 @@ for s in sorted(results.iteritems(),
              cmp=lambda x, y: cmp(*ratio_of_messages(x, y)), reverse=True):
     name, stats = s
     if name in registered_feeds:
-        print "    »%s«: %d of %d (%.2f%%)" % (name, stats[0], stats[1], 100*float(stats[0])/float(stats[1]))
+        print "    »%s«: %d of %d (%.2f%%)" % (name.encode("utf-8"), stats[0], stats[1], 100*float(stats[0])/float(stats[1]))
 
 print ""
 print "The following feeds lacked any recommended posts:"
 
 for s in sorted(no_reks.iteritems(), key=operator.itemgetter(1)):
-    print "    »%s«: (%d posts)" % s
+    name, stats = s
+    print "    »%s«: (%d posts)" % (name.encode("utf-8"), stats)
     
 print ""
 
