@@ -8,6 +8,7 @@ import time
 import socket
 from email.mime.text import MIMEText
 from email.utils import formatdate
+from email.errors import HeaderParseError
 import json
 import commands
 import feedparser
@@ -304,7 +305,7 @@ def update_feeds(update_feed_name="All"):
                           "body": msg.as_string()})
           
           num_written += 1
-        except email.errors.HeaderParseError as e:
+        except HeaderParseError as e:
           print("E: parse error when generating email file: %s" % e)
           continue
 
