@@ -299,10 +299,14 @@ def update_feeds(update_feed_name="All"):
         msg['X-Entry-URL'] = msg['Message-ID'] = link
 
         # write to file
-        entries.append({"path": path,
-                        "body": msg.as_string()})
-
-        num_written += 1
+        try:
+          entries.append({"path": path,
+                          "body": msg.as_string()})
+          
+          num_written += 1
+        except email.errors.HeaderParseError as e:
+          print("E: parse error when generating email file: %s" % e)
+          continue
 
     if num_written == 1:
       print_optionally(" - 1 new entry")

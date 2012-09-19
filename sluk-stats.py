@@ -11,8 +11,8 @@ import os.path, notmuch, operator, ConfigParser
 conf = ConfigParser.ConfigParser()
 
 # CUSTOMIZE THESE VARIABLES TO YOUR LIKING
-rek = notmuch.Database().create_query("tag:feeds and tag:rek")
-feeds = notmuch.Database().create_query("tag:feeds")
+rek = notmuch.Database().create_query("folder:sluk and tag:rek")
+feeds = notmuch.Database().create_query("folder:sluk")
 config_file = os.path.expanduser("~/.slukrc")
 
 conf.readfp(open(config_file))
