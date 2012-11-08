@@ -192,7 +192,6 @@ def update_feeds(update_feed_name="All"):
     try:
       parsed = feedparser.parse(feed, etag
                                 = cache[feed]["etag"])
-      
 
       # Needs time in tuple form. Somewhere, there was a bug that made
       # it necessary to do this outside of the call to feedparser,
@@ -288,7 +287,12 @@ def update_feeds(update_feed_name="All"):
         # create text/html message only
         msg = MIMEText(content, "html")
 
-        msg['Subject'] = title
+        # This wierd .splitlines() business takes care of any newline
+        # characters that might have snuck into the title (those would
+        # otherwise mess up the mail file).  This was directly copied
+        # from a Stack Overflow thread:
+        # http://stackoverflow.com/questions/2201633/replace-newlines-in-a-unicode-string
+        msg['Subject'] = ''.join(unicode(title, 'utf-8').splitlines())
         msg['From']    = feed_name + " <sluk@" + os.uname()[1] + ">"
         msg['To']      = "sluk@" + os.uname()[1]
 
