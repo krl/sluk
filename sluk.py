@@ -14,6 +14,7 @@ import commands
 import feedparser
 import fileinput
 import traceback
+import codecs
 
 # initialize user config
 conf = ConfigParser.ConfigParser()
@@ -61,7 +62,7 @@ def initialize_config():
     config_file = os.path.expanduser("~/.slukrc")
 
   try:
-    conf.readfp(open(config_file))
+    conf.readfp(codecs.open(config_file, encoding="utf-8"))
     print_optionally("I: Using config file '%s'" % config_file)
   except IOError:
     print("E: Config file not found '%s'" % config_file)
@@ -80,7 +81,7 @@ def parse_feed_line(feed):
 
   if len(split) > 1:
     feed = split[1]
-    nick = split[0].decode("utf-8")
+    nick = split[0]
     
   if len(split) > 2:
     bodyfilter = split[2]
@@ -96,9 +97,9 @@ def search(query):
 
   def sort_of_similar(a, b):
     if not a == None and not b == None:
-      return ratio(a.encode("utf-8"), b.encode("utf-8")) > 0.50
+      return ratio(a, b) > 0.50
 
-  with open(conf.get("conf", "feed_list")) as f:
+  with codecs.open(conf.get("conf", "feed_list"), encoding="utf-8") as f:
     for line in f:
       nick, url, bodyfilter = parse_feed_line(line)
       if sort_of_similar(query, nick) or sort_of_similar(query, url):
@@ -149,11 +150,11 @@ def add_feed(name, url):
   print "Feed '%s' added to collection." % name
   f.close()
 
-def update_feeds(update_feed_name="All"):
+def update_feeds(update_feed_name=u"All"):
   "update all feeds"
   # initialize cache
   try:
-    cache = json.loads(open(conf.get("conf", "cache")).read())
+    cache = json.loads(codecs.open(conf.get("conf", "cache"), encoding="utf-8").read())
   except IOError, ValueError:
     cache = {}
 
@@ -164,16 +165,16 @@ def update_feeds(update_feed_name="All"):
   try:
     # "with" ensures everything is nicely cleaned up afterwards
     # (closed, released, ...) without needing specific "finally:" code.
-    with open(cache_entries_file, 'r') as f:
+    with codecs.open(cache_entries_file, 'r', encoding="utf-8") as f:
       cache_entries = f.read().split("\n")
   except IOError:
-    cache_entries = ""
+    cache_entries = u""
 
-  cache_entries_new = ""
+  cache_entries_new = u""
 
   entries = []
 
-  for feed in open(conf.get("conf", "feed_list")).read().split("\n"):
+  for feed in codecs.open(conf.get("conf", "feed_list"), encoding="utf-8").read().split("\n"):
     
     nick, feed, bodyfilter = parse_feed_line(feed)
     if update_feed_name != "All" and update_feed_name != nick:
@@ -240,7 +241,7 @@ def update_feeds(update_feed_name="All"):
       # cache_entries_new and proceed as usual.
       # Otherwise, drop this entry and start processing the next.
 
-      if not lnk.encode(parsed.encoding) in cache_entries:
+      if not lnk in cache_entries:
         cache_entries_new += lnk + "\n"
       else:
         continue
@@ -270,29 +271,29 @@ def update_feeds(update_feed_name="All"):
           content = lnk
 
         try:
-          content   = content.encode(parsed.encoding)
-          feed_name = parsed['feed']['title'].encode(parsed.encoding)
-          title     = entry['title'].encode(parsed.encoding)
-          link      = lnk.encode(parsed.encoding)
-        except UnicodeEncodeError:
-          print("E: error decoding entry: " + path)
-          continue
+          content   = content
+          feed_name = parsed['feed']['title']
+          title     = entry['title']
+          link      = lnk
         except KeyError:
           print("E: error parsing entry: " + path)
           continue
 
         if bodyfilter:
-          content = commands.getoutput(conf.get("filters", bodyfilter).replace("{url}", link))
+          content = unicode(commands.getoutput(conf.get("filters", bodyfilter).replace("{url}", link)), encoding=sys.stdout.encoding)
+
+        # We're encoding everything as utf-8 explicitly, because sadly, the MIME module won't do that for us.
 
         # create text/html message only
-        msg = MIMEText(content, "html")
+        msg = MIMEText(content.encode("utf-8"), "html")
 
         # This wierd .splitlines() business takes care of any newline
         # characters that might have snuck into the title (those would
         # otherwise mess up the mail file).  This was directly copied
         # from a Stack Overflow thread:
         # http://stackoverflow.com/questions/2201633/replace-newlines-in-a-unicode-string
-        msg['Subject'] = ''.join(unicode(title, 'utf-8').splitlines())
+
+        msg['Subject'] = u''.join(title.splitlines()).encode("utf-8")
         msg['From']    = feed_name + " <sluk@" + os.uname()[1] + ">"
         msg['To']      = "sluk@" + os.uname()[1]
 
@@ -303,10 +304,12 @@ def update_feeds(update_feed_name="All"):
 
         msg['X-Entry-URL'] = msg['Message-ID'] = link
 
-        # write to file
+        # We need to decode back to the unicode type after the little
+        # adventure through the MIME modules.  Remember, we encoded to
+        # utf-8 earlier?
         try:
           entries.append({"path": path,
-                          "body": msg.as_string()})
+                          "body": unicode(msg.as_string(), encoding="utf-8")})
           
           num_written += 1
         except HeaderParseError as e:
@@ -322,20 +325,19 @@ def update_feeds(update_feed_name="All"):
 
   for x in entries:
     print_optionally("writing " + x['path'])
-    message_file = open(x['path'], "w")
-    message_file.write(x['body'])
-    message_file.close()
+    with codecs.open(x['path'], "w", encoding="utf-8") as message_file:
+      message_file.write(x['body'])
 
   # update cache
 
   print_optionally("updating cache file: " + conf.get("conf", "cache"))
-  cache_file = open(conf.get("conf", "cache"), "w")
-  cache_file.write(json.dumps(cache))
-  cache_file.close()
+  with codecs.open(conf.get("conf", "cache"), "w", encoding="utf-8") as cache_file:
+    cache_file.write(json.dumps(cache))
+
 
   try:
     print_optionally("I: Updating entries cache: '%s'" % cache_entries_file)
-    with open(cache_entries_file, 'a') as f:  # append, not write
+    with codecs.open(cache_entries_file, 'a', encoding="utf-8") as f:  # append, not write
       f.write(cache_entries_new.encode(parsed.encoding))
   except IOError:
     print_optionally("E: Failed writing to entries cache file: '%s'" % cache_entries_file)
@@ -370,7 +372,7 @@ elif sys.argv[1] == 'update':
     # Fallback to old behavior.
     update_feeds()
   elif len(sys.argv) == 3:
-    update_feeds(sys.argv[2])
+    update_feeds(unicode(sys.argv[2], encoding=sys.stdin.encoding))
   else:
     print "Update: must specify either one or zero names."
     print "See '%s help' for more info." % (os.path.basename(sys.argv[0]))
@@ -382,7 +384,7 @@ elif sys.argv[1] == 'help':
 elif sys.argv[1] == 'search':
   # make function here. Use Levenshtein. Catch import errors.
   initialize_config()
-  search(" ".join(sys.argv[2:]))
+  search(unicode(" ".join(sys.argv[2:]), encoding=sys.stdin.encoding))
   exit()
 
 else:
