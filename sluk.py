@@ -280,7 +280,11 @@ def update_feeds(update_feed_name=u"All"):
           continue
 
         if bodyfilter:
-          content = unicode(commands.getoutput(conf.get("filters", bodyfilter).replace("{url}", link)), encoding=sys.stdout.encoding)
+          if sys.stdout.encoding != None:
+            enc = sys.stdout.encoding
+          else:
+            enc = "utf-8"
+          content = unicode(commands.getoutput(conf.get("filters", bodyfilter).replace("{url}", link)), encoding=enc)
 
         # We're encoding everything as utf-8 explicitly, because sadly, the MIME module won't do that for us.
 
