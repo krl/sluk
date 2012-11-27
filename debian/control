@@ -8,11 +8,11 @@ Vcs-Browser: http://github.com/krl/sluk/
 
 Package: sluk
 Architecture: all
-Depends: 
+Depends:
  ${misc:Depends}
-Suggests: 
+Suggests:
  notmuch
-Description: simple RSS feed to local message delivery 
+Description: simple RSS feed to local message delivery
  sluk is a simple program that turns RSS feeds into individual
  messages that are delivered to individual files locally (ala
  maildir).  This makes if very easy to follow RSS feeds with mail
